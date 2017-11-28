@@ -32,6 +32,8 @@ from qiskit import QuantumProgram
 
 import Qconfig
 
+import time
+
 ###############################################################
 # Set the backend name and coupling map.
 ###############################################################
@@ -77,8 +79,35 @@ QPS_SPECS = {
             }],
             "classical_registers": [{
                 "name": "c",
-                "size": 5}
-            ]
+                "size": 5
+            }]
+        },
+        {
+            "name": "gft16",
+            "quantum_registers": [{
+                "name": "q",
+                "size": 5
+            }],
+            "classical_registers": [{
+                "name": "c",
+                "size": 5
+            }]
+        }
+    ]
+}
+
+QPS_SPECSs = {
+    "circuits": [
+        {
+            "name": "qft20",
+            "quantum_registers": [{
+                "name": "q",
+                "size": 20
+            }],
+            "classical_registers": [{
+                "name": "c",
+                "size": 20
+            }]
         }
     ]
 }
@@ -99,13 +128,17 @@ def qft(circ, q, n):
         circ.h(q[j])
 
 
+qpp = QuantumProgram(specs=QPS_SPECSs)
 qp = QuantumProgram(specs=QPS_SPECS)
 q = qp.get_quantum_register("q")
 c = qp.get_classical_register("c")
+qq = qpp.get_quantum_register("q")
+cc = qpp.get_classical_register("c")
 
 qft3 = qp.get_circuit("qft3")
 qft4 = qp.get_circuit("qft4")
 qft5 = qp.get_circuit("qft5")
+qfttest = qpp.get_circuit("gft20")
 
 input_state(qft3, q, 3)
 qft3.barrier()
@@ -128,9 +161,17 @@ qft5.barrier()
 for j in range(5):
     qft5.measure(q[j], c[j])
 
+input_state(qfttest, qq, 20)
+qfttest.barrier()
+qft(qfttest, qq, 20)
+qfttest.barrier()
+for j in range(20):
+    qfttest.measure(qq[j], cc[j])
+
 print(qft3.qasm())
 print(qft4.qasm())
 print(qft5.qasm())
+print(qfttest.qasm())
 
 
 ###############################################################
